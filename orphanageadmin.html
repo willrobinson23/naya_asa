@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="images/logo6.png">
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+  <title>Orphanage Admin Login</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-image: url('/images/causes/view-arrangement-with-keyboard-notebooks.jpg');
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: cover;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    h2 {
+      font-size: 24px;
+      color: #333;
+      text-align: center;
+      margin-bottom: 20px;
+      margin-right: 30px;
+    }
+
+    form {
+      width: 100%;
+      max-width: 400px;
+      padding: 30px;
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      color: #333;
+      margin: 10px 0 5px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 16px;
+      box-sizing: border-box;
+      transition: border-color 0.3s ease;
+    }
+
+    input:focus {
+      border-color: #4CAF50;
+      outline: none;
+    }
+
+    button {
+      padding: 12px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .error {
+      color: #f44336;
+      font-size: 14px;
+      margin-top: 15px;
+    }
+
+    .desh{
+      display: flex;
+      flex-direction: column;
+      width: 25%;
+      margin-right: 30px;
+      text-align: justify;
+      text-justify: inter-word;
+      background-color: rgb(189, 193, 238);
+      border-radius: 20px;
+      padding: 30px;
+    }
+
+    @media (max-width: 480px) {
+      h2 {
+        font-size: 20px;
+      }
+
+      form {
+        padding: 20px;
+        width: 90%;
+      }
+
+      input, button {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="desh">
+    <h2 style="text-align: center; color: #050f96;">Naya Aasha - Orphanage</h2>
+    <p>The orphanage admin panel allows users to manage orphan details efficiently. It includes features for editing orphan profiles, retrieving orphan data, and deleting orphan records. These tools enable administrators to maintain accurate and up-to-date information, ensuring smooth operation and support for each orphan under care. The intuitive interface ensures seamless management, with quick access to modify or delete orphan records as needed.</p>
+  </div>
+
+  <form id="orphanageLoginForm">
+    <label for="email">Email:</label>
+    <input type="email" id="email" placeholder="Enter your email" required />
+    
+    <label for="password">Password:</label>
+    <input type="password" id="password" placeholder="Enter your password" required />
+    
+    <label for="orphanageId">Orphanage ID:</label>
+    <input type="number" id="orphanageId" placeholder="Enter orphanage ID" required />
+    
+    <button type="submit">Login</button>
+    <p id="errorMessage" class="error"></p>
+  </form>
+
+  <script>
+    const API_URL = "https://610b-2405-acc0-1307-4d2c-4b17-3d99-9b3c-2389.ngrok-free.app/graphql";
+  
+    document.getElementById("orphanageLoginForm").addEventListener("submit", async function (event) {
+      event.preventDefault();
+  
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const orphanageId = document.getElementById("orphanageId").value.trim();
+  
+      const query = `
+        mutation OrphanageSession($sessionInfo: OrphanageSessionInput!) {
+          orphanageLogin(input: { sessionInfo: $sessionInfo }) {
+            orphanage {
+              id
+              name
+              location
+              userId
+            }
+            token
+            errors
+          }
+        }
+      `;
+  
+      const variables = {
+        sessionInfo: {
+          orphanageId: parseInt(orphanageId),
+          password: password,
+          email: email,
+        },
+      };
+  
+      try {
+        const response = await fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ query, variables }),
+        });
+  
+        const data = await response.json();
+  
+        if (data.errors || !data.data.orphanageLogin.token) {
+          console.error("GraphQL Errors:", data.errors);
+          document.getElementById("errorMessage").textContent =
+            "Invalid credentials or orphanage ID.";
+          return;
+        }
+  
+        const token = data.data.orphanageLogin.token;
+        const orphanage = data.data.orphanageLogin.orphanage;
+  
+        localStorage.setItem("authToken", token);
+        localStorage.setItem("orphanageId", orphanageId);
+  
+        console.log("Orphanage Details:", orphanage);
+        console.log("Token:", token);
+  
+        Swal.fire({
+          title: "Login Successful!",
+          text: "Redirecting to your dashboard...",
+          icon: "success",
+          timer: 3000,
+          showConfirmButton: false,
+        }).then(() => {
+          window.location.href = "orphanagepanel.html";
+        });
+  
+        document.getElementById("errorMessage").textContent = "";
+      } catch (error) {
+        console.error("Error:", error);
+        document.getElementById("errorMessage").textContent =
+          "Network error. Please try again later.";
+      }
+    });
+  </script>
+  
+
+</body>
+</html>

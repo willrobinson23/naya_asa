@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="images/logo6.png">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <title>Naya Aasha SuperAdmin-Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-image: url(/images/causes/workplace-objects.jpg);
+            background-position: center;
+            background-size: cover;
+        }
+        .login-container {
+            width: 400px;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(8px) ;
+            -webkit-backdrop-filter: blur(8px);
+            
+        }
+        .login-container h1 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #1f8a9d;
+        }
+        .login-container input {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .login-container button {
+            width: 87%;
+            padding: 10px;
+            border: none;
+            background-color: #5c67f2;
+            color: #fff;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .login-container button:hover {
+            background-color: #4e5be5;
+        }
+        .swit{
+            margin-top: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>Naya Aasha</h1>
+        <form id="loginForm">
+            <input type="email" id="email" placeholder="Enter your email" required>
+            <input type="password" id="password" placeholder="Enter your password" required>
+            <button type="submit">Login</button>
+            <button style="background-color: bisque;" class="swit" type="submit"><a style="color: #393737; text-decoration: none;" href="orphanageadmin.html">Switch to Orphanage Admin</a></button>
+        </form>
+    </div>
+
+    <script>
+        const apiUrl = 'https://610b-2405-acc0-1307-4d2c-4b17-3d99-9b3c-2389.ngrok-free.app/graphql';
+
+        const LOGIN_MUTATION = `
+            mutation UserSession($sessionInfo: UserSessionInput!) {
+                userLogin(input: { sessionInfo: $sessionInfo }) {
+                    user {
+                        id
+                        name
+                        email
+                        roles
+                    }
+                    token
+                    errors
+                }
+            }
+        `;
+
+        document.getElementById('loginForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        query: LOGIN_MUTATION,
+                        variables: {
+                            sessionInfo: {
+                                email: email,
+                                password: password
+                            }
+                        }
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.errors) {
+                    console.error('Login failed:', result.errors);
+                    alert('Login failed: ' + result.errors.map(err => err.message).join(', '));
+                } else if (result.data?.userLogin?.errors?.length > 0) {
+                    console.error('Login failed:', result.data.userLogin.errors);
+                    alert('Login failed: ' + result.data.userLogin.errors.join(', '));
+                } else {
+                    const { user, token } = result.data.userLogin;
+                    console.log('Login successful:', user);
+                    console.log('Received Token:', token);
+
+                    localStorage.setItem('authToken', token);
+
+                    localStorage.setItem('user', JSON.stringify(user));
+
+                    if (user.roles.includes('superadmin')) {
+                            Swal.fire({
+                                title: 'Login successful!',
+                                text: 'Welcome, ' + user.name,
+                                icon: 'success',
+                                confirmButtonText: 'Proceed'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    window.location.href = 'superadmin.html';
+                                }
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Unauthorized',
+                                text: 'You are not authorized to access the Super Admin Dashboard.',
+                                icon: 'error',
+                                confirmButtonText: 'Okay'
+                            });
+                        }
+
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>

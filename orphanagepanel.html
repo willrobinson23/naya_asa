@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orphan Management</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="icon" type="image/png" href="images/logo6.png">
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f5f5f5;
+  color: #333;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  flex-direction: column;
+}
+
+h1 {
+  font-size: 2.5rem;
+  color: #555252;
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: 600;
+}
+
+#orphanageInput {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+  background-color: #fff;
+  padding: 20px 15px 20px 15px;
+  border-radius: 30px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#orphanageId {
+  padding: 12px;
+  width: 280px;
+  margin-right: 10px;
+  border: 2px solid #ddd;
+  border-radius: 25px;
+  font-size: 1.1rem;
+  outline: none;
+  transition: all 0.3s ease;
+  margin-left: 10px;
+}
+
+#orphanageId:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+}
+
+#fetchOrphansBtn {
+  padding: 12px 25px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: background-color 0.3s ease;
+}
+
+#fetchOrphansBtn:hover {
+  background-color: #0056b3;
+}
+
+#addOrphanBtn {
+  padding: 12px 30px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  margin-top: 20px;
+  transition: background-color 0.3s ease;
+}
+
+#addOrphanBtn:disabled {
+  background-color: #ddd;
+  cursor: not-allowed;
+}
+
+#addOrphanBtn:hover {
+  background-color: #218838;
+}
+
+#orphanList {
+  width: 80%;
+  margin-top: 20px;
+}
+
+.orphan-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #ddd;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.orphan-card:hover {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.orphan-card h3 {
+  font-size: 1.3rem;
+  color: #333;
+  font-weight: 600;
+  margin: 0;
+}
+
+.orphan-card p {
+  font-size: 1.1rem;
+  color: #555;
+  margin: 5px 0;
+}
+
+.orphan-card button {
+  background-color: #dc3545;
+  color: white;
+  padding: 8px 18px;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.orphan-card button:hover {
+  background-color: #c82333;
+}
+
+#orphanModal {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  padding: 30px;
+  border: 1px solid #ddd;
+  border-radius: 15px;
+  z-index: 1000;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.5s ease-out;
+}
+
+#orphanModal h2 {
+  font-size: 1.6rem;
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: 600;
+}
+
+#orphanModal form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#orphanModal form input,
+#orphanModal form select,
+#orphanModal form button {
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 30px;
+  border: 2px solid #ddd;
+  font-size: 1.1rem;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+#orphanModal form input:focus,
+#orphanModal form select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+}
+
+#orphanModal form button {
+  background-color: #28a745;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 1.2rem;
+}
+
+#orphanModal form button:hover {
+  background-color: #218838;
+}
+
+#modalIcon {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  font-size: 1.8rem;
+  color: #007bff;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+#modalIcon:hover {
+  transform: scale(1.1);
+}
+
+#overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+
+#overlay.show {
+  display: block;
+  opacity: 1;
+}
+
+@keyframes fadeIn {
+  0% {
+    transform: translate(-50%, -60%);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, -50%);
+    opacity: 1;
+  }
+}
+  </style>
+</head>
+<body>
+  <h1>Orphan Management</h1>
+  <button id="addOrphanBtn" disabled>Add Orphan</button>
+  <div id="orphanList"></div>
+
+  <div id="orphanModal">
+    <i id="closeModal" class="fas fa-times-circle"></i>
+    <h2 id="modalTitle">Add Orphan</h2>
+    <form id="orphanForm">
+      <input type="text" id="orphanName" placeholder="Name" required>
+      <input type="number" id="orphanAge" placeholder="Age" required>
+      <select id="orphanGender" required>
+        <option value="" disabled selected>Select Gender</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+      </select>
+      <button type="submit">Save</button>
+    </form>
+  </div>
+  <div id="overlay"></div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const apiEndpoint = "https://610b-2405-acc0-1307-4d2c-4b17-3d99-9b3c-2389.ngrok-free.app/graphql";
+      const addOrphanBtn = document.getElementById("addOrphanBtn");
+      const orphanList = document.getElementById("orphanList");
+      const orphanModal = document.getElementById("orphanModal");
+      const closeModal = document.getElementById("closeModal");
+      const orphanForm = document.getElementById("orphanForm");
+      const overlay = document.getElementById("overlay");
+
+      let orphans = [];
+      let orphanageId = null;
+
+      const fetchGraphQL = async (query, variables) => {
+        const response = await fetch(apiEndpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query, variables }),
+        });
+        const result = await response.json();
+        return result.data;
+      };
+
+      const fetchOrphans = async () => {
+        if (!orphanageId) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Orphanage ID is missing. Please log in again.',
+          });
+          return;
+        }
+        const query = `
+          query GetOrphan($orphanageId: ID!) {
+            getOrphans(orphanageId: $orphanageId) {
+              orphan {
+                id
+                name
+                age
+                gender
+              }
+              errors
+            }
+          }
+        `;
+        const data = await fetchGraphQL(query, { orphanageId });
+        orphans = data.getOrphans.orphan || [];
+        renderOrphanList();
+        addOrphanBtn.disabled = false;
+      };
+
+      const addOrphan = async (name, age, gender) => {
+        const mutation = `
+          mutation CreateOrphan($orphanInfo: OrphanInput!, $orphanageId: ID!) {
+            createOrphan(input: { orphanInfo: $orphanInfo, orphanageId: $orphanageId }) {
+              orphan {
+                id
+                name
+                age
+                gender
+              }
+              errors
+            }
+          }
+        `;
+        const variables = { orphanInfo: { name, age, gender }, orphanageId };
+        const data = await fetchGraphQL(mutation, variables);
+
+        if (data.createOrphan.errors && data.createOrphan.errors.length > 0) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error adding orphan',
+            text: data.createOrphan.errors.join(", "),
+          });
+        } else {
+          orphans.push(data.createOrphan.orphan);
+          renderOrphanList();
+          Swal.fire({
+            icon: 'success',
+            title: 'Orphan Added',
+            text: `${name} has been successfully added.`,
+          });
+        }
+      };
+
+      const deleteOrphan = async (id) => {
+        const mutation = `
+          mutation DeleteOrphan($id: ID!) {
+            deleteOrphan(input: { id: $id }) {
+              orphan {
+                id
+              }
+              message
+              errors
+            }
+          }
+        `;
+        const variables = { id };
+        const data = await fetchGraphQL(mutation, variables);
+
+        if (data.deleteOrphan.errors && data.deleteOrphan.errors.length > 0) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error deleting orphan',
+            text: data.deleteOrphan.errors.join(", "),
+          });
+        } else {
+          orphans = orphans.filter((orphan) => orphan.id !== id);
+          renderOrphanList();
+          Swal.fire({
+            icon: 'success',
+            title: 'Orphan Deleted',
+            text: `The orphan has been successfully deleted.`,
+          });
+        }
+      };
+
+      const renderOrphanList = () => {
+        orphanList.innerHTML = "";
+        orphans.forEach((orphan) => {
+          const orphanCard = document.createElement("div");
+          orphanCard.className = "orphan-card";
+
+          orphanCard.innerHTML = `
+            <div>
+              <h3>${orphan.name}</h3>
+              <p>Age: ${orphan.age}</p>
+              <p>Gender: ${orphan.gender}</p>
+            </div>
+            <div>
+              <button class="delete" data-id="${orphan.id}">Delete</button>
+            </div>
+          `;
+          orphanList.appendChild(orphanCard);
+        });
+
+        document.querySelectorAll(".delete").forEach((button) => {
+          button.addEventListener("click", () => {
+            const id = button.getAttribute("data-id");
+            Swal.fire({
+              title: 'Are you sure?',
+              text: "You won't be able to revert this!",
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonText: 'Yes, delete it!',
+              cancelButtonText: 'No, cancel!',
+            }).then((result) => {
+              if (result.isConfirmed) {
+                deleteOrphan(id);
+              }
+            });
+          });
+        });
+      };
+
+      const openModal = () => {
+        orphanModal.style.display = "block";
+        overlay.style.display = "block";
+      };
+
+      const hideModal = () => {
+        orphanModal.style.display = "none";
+        overlay.style.display = "none";
+        orphanForm.reset();
+      };
+
+      orphanForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const name = document.getElementById("orphanName").value.trim();
+        const age = parseInt(document.getElementById("orphanAge").value.trim());
+        const gender = document.getElementById("orphanGender").value;
+
+        await addOrphan(name, age, gender);
+        hideModal();
+      });
+
+      addOrphanBtn.addEventListener("click", openModal);
+      closeModal.addEventListener("click", hideModal);
+      overlay.addEventListener("click", hideModal);
+
+      const orphanageIdFromStorage = localStorage.getItem("orphanageId");
+      if (orphanageIdFromStorage) {
+        orphanageId = orphanageIdFromStorage;
+        fetchOrphans();
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Unauthorized',
+          text: 'Please log in to access this page.',
+        }).then(() => {
+          window.location.href = "orphanageadmin.html";
+        });
+      }
+    });
+  </script>
+</body>
+</html>
